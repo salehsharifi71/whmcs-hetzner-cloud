@@ -212,6 +212,22 @@ function hetzner_SuspendAccount(array $params)
     try {
         // Call the service's suspend function, using the values provided by
         // WHMCS in `$params`.
+        $apiKey=$params['serveraccesshash'];
+        $hetznerClient = new \LKDev\HetznerCloud\HetznerAPIClient($apiKey);
+        $pdo = Capsule::connection()->getPdo();
+        $q = $pdo->prepare("SELECT instanceid FROM mod_hetzner_cloud WHERE hostingid = ?");
+        $q->execute(array($params['serviceid']));
+
+        if ($q && $q->rowCount() > 0) {
+            $serverId= $q->fetchObject()->instanceid;
+        } else {
+            $serverId= 0;
+        }
+        if($serverId>0) {
+
+            $server = $hetznerClient->servers()->get($serverId);
+            $action = $server->shutdown()->getResponsePart('action');
+        }
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -246,6 +262,24 @@ function hetzner_UnsuspendAccount(array $params)
     try {
         // Call the service's unsuspend function, using the values provided by
         // WHMCS in `$params`.
+
+
+        $apiKey=$params['serveraccesshash'];
+        $hetznerClient = new \LKDev\HetznerCloud\HetznerAPIClient($apiKey);
+        $pdo = Capsule::connection()->getPdo();
+        $q = $pdo->prepare("SELECT instanceid FROM mod_hetzner_cloud WHERE hostingid = ?");
+        $q->execute(array($params['serviceid']));
+
+        if ($q && $q->rowCount() > 0) {
+            $serverId= $q->fetchObject()->instanceid;
+        } else {
+            $serverId= 0;
+        }
+        if($serverId>0) {
+            $server = $hetznerClient->servers()->get($serverId);
+            $server->powerOn();
+
+        }
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -279,6 +313,7 @@ function hetzner_TerminateAccount(array $params)
     try {
         // Call the service's terminate function, using the values provided by
         // WHMCS in `$params`.
+
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
