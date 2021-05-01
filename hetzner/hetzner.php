@@ -214,6 +214,7 @@ function hetzner_SuspendAccount(array $params)
         // WHMCS in `$params`.
         $apiKey=$params['serveraccesshash'];
         $hetznerClient = new \LKDev\HetznerCloud\HetznerAPIClient($apiKey);
+
         $pdo = Capsule::connection()->getPdo();
         $q = $pdo->prepare("SELECT instanceid FROM mod_hetzner_cloud WHERE hostingid = ?");
         $q->execute(array($params['serviceid']));
@@ -226,7 +227,7 @@ function hetzner_SuspendAccount(array $params)
         if($serverId>0) {
 
             $server = $hetznerClient->servers()->get($serverId);
-            $action = $server->shutdown()->getResponsePart('action');
+            $action = $server->powerOff()->getResponsePart('action');
         }
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
@@ -858,26 +859,26 @@ function hetzner_ClientArea(array $params){
         if($serverId>0) {
             $server = $hetznerClient->servers()->get($serverId);
             $text.= 'Server: '.$server->name.PHP_EOL;
-            $text.= 'Perform Shutdown now:'.PHP_EOL;
+            $text.= 'در حال راه اندازی مجدد هستیم:'.PHP_EOL;
             /**
              * @var \LKDev\HetznerCloud\Models\Servers\Server
              */
-            $action = $server->shutdown()->getResponsePart('action');
+            $action = $server->reset()->getResponsePart('action');
 
 //            $text.= 'Reply from API: Action ID: '.$action->id.' '.$action->command.' '.$action->started.PHP_EOL;
 
-            $text.= 'Wait some seconds that the server could shutdown.'.PHP_EOL;
-            sleep(5);
-            $text.= 'Get the Server from the API:'.PHP_EOL;
-            $server = $hetznerClient->servers()->get($serverId);
-            $text.= 'Server status: '.$server->status.PHP_EOL;
-            $text.= "Let's start it again!";
-            $server->powerOn();
-            $text.= 'Wait some seconds that the server could startup.'.PHP_EOL;
-            sleep(5);
-            $text.= 'Get the Server from the API:'.PHP_EOL;
-            $server = $hetznerClient->servers()->get($serverId);
-            $text.= 'Server status: '.$server->status.PHP_EOL;
+            $text.= 'عملیات با موفقیت انجام شد لطفا دقایقی دیگر برای ورود به سرور تلاش کنید.'.PHP_EOL;
+//            sleep(5);
+//            $text.= 'Get the Server from the API:'.PHP_EOL;
+//            $server = $hetznerClient->servers()->get($serverId);
+//            $text.= 'Server status: '.$server->status.PHP_EOL;
+//            $text.= "Let's start it again!";
+//            $server->powerOn();
+//            $text.= 'Wait some seconds that the server could startup.'.PHP_EOL;
+//            sleep(5);
+//            $text.= 'Get the Server from the API:'.PHP_EOL;
+//            $server = $hetznerClient->servers()->get($serverId);
+//            $text.= 'Server status: '.$server->status.PHP_EOL;
 
         }
         $theme=$text.'</pre>';
@@ -886,14 +887,10 @@ function hetzner_ClientArea(array $params){
         $text='<pre>';
         if($serverId>0) {
             $server = $hetznerClient->servers()->get($serverId);
-            $text.= 'Server status: '.$server->status.PHP_EOL;
-            $text.= "Let's start it ";
+            $text.= 'وضعیت فعلی سرور: '.$server->status.PHP_EOL;
+            $text.= "در حال روشن کردن سرور ";
             $server->powerOn();
-            $text.= 'Wait some seconds that the server could startup.'.PHP_EOL;
-            sleep(5);
-            $text.= 'Get the Server from the API:'.PHP_EOL;
-            $server = $hetznerClient->servers()->get($serverId);
-            $text.= 'Server status: '.$server->status.PHP_EOL;
+            $text.= 'برای ورود دقایقی منتظر بمانید.'.PHP_EOL;
 
         }
         $theme=$text.'</pre>';
@@ -903,19 +900,19 @@ function hetzner_ClientArea(array $params){
         if($serverId>0) {
             $server = $hetznerClient->servers()->get($serverId);
             $text.= 'Server: '.$server->name.PHP_EOL;
-            $text.= 'Perform Shutdown now:'.PHP_EOL;
+            $text.= 'در حال خاموش کردن سرور:'.PHP_EOL;
             /**
              * @var \LKDev\HetznerCloud\Models\Servers\Server
              */
-            $action = $server->shutdown()->getResponsePart('action');
+            $action = $server->powerOff()->getResponsePart('action');
 
 //            $text.= 'Reply from API: Action ID: '.$action->id.' '.$action->command.' '.$action->started.PHP_EOL;
 
-            $text.= 'Wait some seconds that the server could shutdown.'.PHP_EOL;
+            $text.= 'دقایقی تا خاموش شدن سرور صبر نمایید.'.PHP_EOL;
             sleep(5);
-            $text.= 'Get the Server from the API:'.PHP_EOL;
+            $text.= 'بررسی وضعیت سرور:'.PHP_EOL;
             $server = $hetznerClient->servers()->get($serverId);
-            $text.= 'Server status: '.$server->status.PHP_EOL;
+            $text.= ' '.$server->status.PHP_EOL;
 
         }
         $theme=$text.'</pre>';
